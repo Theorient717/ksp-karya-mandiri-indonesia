@@ -1,0 +1,6 @@
+{
+  "name": "KSP KARYA MANDIRI INDONESIA",
+  "description": "Sistem Informasi Koperasi Simpan Pinjam Terintegrasi berbasis Multi-Spreadsheet Logical Database & Google Apps Script / React Architecture",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
