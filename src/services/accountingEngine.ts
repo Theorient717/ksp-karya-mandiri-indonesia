@@ -194,6 +194,7 @@ export class AccountingEngine {
     principalPortion: number;
     interestPortion: number;
     penaltyPortion: number;
+    fieldCollectionFee?: number;
     totalAmount: number;
     paymentMethod: 'KAS' | 'BANK';
     userId: string;
@@ -206,6 +207,10 @@ export class AccountingEngine {
     const piutangCoa = coaList.find((c) => c.coaCode === '1-1201')!;
     const bungaCoa = coaList.find((c) => c.coaCode === '4-1001')!;
     const dendaCoa = coaList.find((c) => c.coaCode === '4-1003')!;
+    const lapanganCoa = coaList.find((c) => c.coaCode === '4-1004') || {
+      coaCode: '4-1004',
+      accountName: 'Pendapatan Jasa Layanan / Penagihan Lapangan (Door-to-Door)',
+    };
 
     const details: JournalDetail[] = [
       {
@@ -245,6 +250,17 @@ export class AccountingEngine {
         debit: 0,
         credit: params.penaltyPortion,
         memo: `Pendapatan denda keterlambatan angsuran ke-${params.installmentNo}`,
+      });
+    }
+
+    if (params.fieldCollectionFee && params.fieldCollectionFee > 0) {
+      details.push({
+        itemId: 'ITEM-05',
+        coaCode: lapanganCoa.coaCode,
+        accountName: lapanganCoa.accountName,
+        debit: 0,
+        credit: params.fieldCollectionFee,
+        memo: `Pendapatan jasa penagihan lapangan (jemput bola) an ${params.partyName}`,
       });
     }
 

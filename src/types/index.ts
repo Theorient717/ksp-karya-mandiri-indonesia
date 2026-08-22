@@ -198,10 +198,12 @@ export interface InstallmentSchedule {
   principalPaid: number;
   interestPaid: number;
   penaltyPaid: number;
+  fieldCollectionFeePaid?: number;
   totalPaid: number;
   
   remainingPrincipal: number;
   penaltyAmount: number;
+  fieldCollectionFee?: number;
   daysOverdue: number;
   status: InstallmentStatus;
   paidAt?: string;
@@ -217,12 +219,15 @@ export interface InstallmentPayment {
   installmentNo: number;
   paymentDate: string;
   paymentMethod: 'KAS' | 'BANK';
+  collectionType?: 'KANTOR' | 'LAPANGAN';
   bankName?: string;
   principalPortion: number;
   interestPortion: number;
   penaltyPortion: number;
+  fieldCollectionFee?: number;
   totalAmount: number;
   notes: string;
+  collectorName?: string;
   cashBankRefId?: string;
   journalRefId?: string;
   createdById: string;

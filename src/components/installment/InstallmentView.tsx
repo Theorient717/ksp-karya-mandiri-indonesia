@@ -30,6 +30,9 @@ export const InstallmentView: React.FC = () => {
   // Payment Modal State
   const [selectedSchedule, setSelectedSchedule] = useState<InstallmentSchedule | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'KAS' | 'BANK'>('KAS');
+  const [collectionType, setCollectionType] = useState<'KANTOR' | 'LAPANGAN'>('KANTOR');
+  const [fieldServiceFee, setFieldServiceFee] = useState<number>(10000);
+  const [collectorName, setCollectorName] = useState<string>('Petugas Lapangan (Kolektor)');
   const [paymentNotes, setPaymentNotes] = useState('');
 
   // Receipt Modal
@@ -48,7 +51,8 @@ export const InstallmentView: React.FC = () => {
     const principalDue = selectedSchedule.principalAmount - selectedSchedule.principalPaid;
     const interestDue = selectedSchedule.interestAmount - selectedSchedule.interestPaid;
     const penaltyDue = selectedSchedule.penaltyAmount - selectedSchedule.penaltyPaid;
-    const totalAmount = principalDue + interestDue + penaltyDue;
+    const appliedFieldFee = collectionType === 'LAPANGAN' ? fieldServiceFee : 0;
+    const totalAmount = principalDue + interestDue + penaltyDue + appliedFieldFee;
 
     const newPayment: InstallmentPayment = {
       paymentId,
@@ -59,12 +63,19 @@ export const InstallmentView: React.FC = () => {
       installmentNo: selectedSchedule.installmentNo,
       paymentDate: new Date().toISOString().split('T')[0],
       paymentMethod,
+      collectionType,
       bankName: paymentMethod === 'BANK' ? 'Bank BCA Operasional' : undefined,
       principalPortion: principalDue,
       interestPortion: interestDue,
       penaltyPortion: penaltyDue,
+      fieldCollectionFee: appliedFieldFee,
       totalAmount,
-      notes: paymentNotes || `Pembayaran angsuran cicilan ke-${selectedSchedule.installmentNo}`,
+      collectorName: collectionType === 'LAPANGAN' ? collectorName : undefined,
+      notes:
+        paymentNotes ||
+        `Pembayaran cicilan ke-${selectedSchedule.installmentNo} (${
+          collectionType === 'LAPANGAN' ? `Layanan Lapangan via ${collectorName}` : 'Bayar di Kantor'
+        })`,
       createdById: currentUser?.userId || 'USR-KASIR',
       createdByName: currentUser?.name || 'Kasir',
       createdAt: new Date().toISOString(),
@@ -78,7 +89,8 @@ export const InstallmentView: React.FC = () => {
           principalPaid: s.principalAmount,
           interestPaid: s.interestAmount,
           penaltyPaid: s.penaltyAmount,
-          totalPaid: s.totalBill + s.penaltyAmount,
+          fieldCollectionFeePaid: appliedFieldFee,
+          totalPaid: s.totalBill + s.penaltyAmount + appliedFieldFee,
           status: 'LUNAS' as const,
           paidAt: new Date().toISOString().split('T')[0],
           paymentRefId: paymentId,
@@ -100,6 +112,7 @@ export const InstallmentView: React.FC = () => {
       principalPortion: principalDue,
       interestPortion: interestDue,
       penaltyPortion: penaltyDue,
+      fieldCollectionFee: appliedFieldFee,
       totalAmount,
       paymentMethod,
       userId: currentUser?.userId || 'USR-KASIR',
@@ -107,6 +120,32 @@ export const InstallmentView: React.FC = () => {
     });
 
     // 3. Show Printable Receipt
+    const receiptDetails = [
+      { label: 'Nomor Akad Kontrak', value: selectedSchedule.contractId },
+      { label: 'Jalur Pelayanan', value: collectionType === 'LAPANGAN' ? `Jasa Lapangan (+Rp ${appliedFieldFee.toLocaleString('id-ID')})` : 'Datang ke Kantor Langsung' },
+      { label: 'Porsi Pokok Pinjaman', value: `Rp ${principalDue.toLocaleString('id-ID')}` },
+      { label: 'Porsi Bunga / Jasa', value: `Rp ${interestDue.toLocaleString('id-ID')}` },
+    ];
+
+    if (appliedFieldFee > 0) {
+      receiptDetails.push({
+        label: 'Biaya Jasa Petugas Lapangan',
+        value: `Rp ${appliedFieldFee.toLocaleString('id-ID')}`,
+      });
+    }
+
+    if (penaltyDue > 0) {
+      receiptDetails.push({
+        label: 'Denda Keterlambatan',
+        value: `Rp ${penaltyDue.toLocaleString('id-ID')}`,
+      });
+    }
+
+    receiptDetails.push(
+      { label: 'Sisa Pokok Pinjaman', value: `Rp ${selectedSchedule.remainingPrincipal.toLocaleString('id-ID')}` },
+      { label: 'No. Jurnal Akuntansi', value: journal.journalId }
+    );
+
     setReceiptData({
       title: 'KWITANSI PEMBAYARAN ANGSURAN RESMI',
       receiptNumber: paymentId,
@@ -115,20 +154,23 @@ export const InstallmentView: React.FC = () => {
       partyId: selectedSchedule.partyId,
       transactionType: `Angsuran Pinjaman Cicilan Ke-${selectedSchedule.installmentNo}`,
       amount: totalAmount,
-      paymentMethod: paymentMethod === 'BANK' ? 'Transfer Bank BCA' : 'Kas Tunai Kasir',
-      details: [
-        { label: 'Nomor Akad Kontrak', value: selectedSchedule.contractId },
-        { label: 'Porsi Pokok Pinjaman', value: `Rp ${principalDue.toLocaleString('id-ID')}` },
-        { label: 'Porsi Bunga / Jasa', value: `Rp ${interestDue.toLocaleString('id-ID')}` },
-        { label: 'Denda Keterlambatan', value: `Rp ${penaltyDue.toLocaleString('id-ID')}` },
-        { label: 'Sisa Pokok Pinjaman', value: `Rp ${selectedSchedule.remainingPrincipal.toLocaleString('id-ID')}` },
-        { label: 'No. Jurnal Akuntansi', value: journal.journalId },
-      ],
-      notes: paymentNotes || 'Terima kasih atas pembayaran tepat waktu.',
-      servedBy: currentUser?.name || 'Kasir',
+      paymentMethod:
+        collectionType === 'LAPANGAN'
+          ? `Tunai Petugas Lapangan (${collectorName})`
+          : paymentMethod === 'BANK'
+          ? 'Transfer Bank BCA'
+          : 'Kas Tunai Kantor Koperasi',
+      details: receiptDetails,
+      notes:
+        paymentNotes ||
+        (collectionType === 'LAPANGAN'
+          ? 'Pembayaran via Jasa Jemput Petugas Lapangan (Dikenakan charge Rp 10.000).'
+          : 'Pembayaran langsung di loket Kantor Koperasi.'),
+      servedBy: collectionType === 'LAPANGAN' ? collectorName : currentUser?.name || 'Kasir',
     });
 
     setSelectedSchedule(null);
+    setCollectionType('KANTOR');
     setPaymentNotes('');
   };
 
@@ -289,6 +331,45 @@ export const InstallmentView: React.FC = () => {
             </div>
 
             <form onSubmit={handlePayInstallment} className="p-6 space-y-4 text-xs">
+              {/* Payment Channel / Collection Location */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-stone-700 dark:text-stone-300">
+                  Tempat / Jalur Pembayaran Angsuran
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCollectionType('KANTOR')}
+                    className={`flex flex-col items-center justify-center rounded-xl p-3 text-center border transition-colors ${
+                      collectionType === 'KANTOR'
+                        ? 'bg-emerald-800 text-white border-emerald-800 shadow-xs'
+                        : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 dark:bg-stone-800 dark:border-stone-700 dark:text-stone-300'
+                    }`}
+                  >
+                    <span className="text-xs font-bold">🏢 Datang ke Kantor</span>
+                    <span className={`text-[10px] mt-0.5 ${collectionType === 'KANTOR' ? 'text-emerald-200' : 'text-stone-500'}`}>
+                      Tanpa biaya tambahan (Tetap)
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCollectionType('LAPANGAN')}
+                    className={`flex flex-col items-center justify-center rounded-xl p-3 text-center border transition-colors ${
+                      collectionType === 'LAPANGAN'
+                        ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                        : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 dark:bg-stone-800 dark:border-stone-700 dark:text-stone-300'
+                    }`}
+                  >
+                    <span className="text-xs font-bold">🛵 Jasa Lapangan</span>
+                    <span className={`text-[10px] mt-0.5 ${collectionType === 'LAPANGAN' ? 'text-amber-100 font-bold' : 'text-amber-600 dark:text-amber-400 font-bold'}`}>
+                      + Cash Rp 10.000
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Detail Tagihan Breakdown */}
               <div className="rounded-xl bg-emerald-50 p-4 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900 space-y-2">
                 <div className="flex justify-between text-xs">
                   <span className="text-stone-600 dark:text-stone-400">Peminjam:</span>
@@ -302,6 +383,12 @@ export const InstallmentView: React.FC = () => {
                   <span className="text-stone-600 dark:text-stone-400">Bunga / Jasa:</span>
                   <span className="font-semibold text-emerald-700 dark:text-emerald-400">Rp {selectedSchedule.interestAmount.toLocaleString('id-ID')}</span>
                 </div>
+                {collectionType === 'LAPANGAN' && (
+                  <div className="flex justify-between text-xs text-amber-800 dark:text-amber-400 font-bold">
+                    <span>Biaya Jasa Petugas Lapangan:</span>
+                    <span>+ Rp {fieldServiceFee.toLocaleString('id-ID')}</span>
+                  </div>
+                )}
                 {selectedSchedule.penaltyAmount > 0 && (
                   <div className="flex justify-between text-xs text-rose-600 font-bold">
                     <span>Denda ({selectedSchedule.daysOverdue} Hari):</span>
@@ -309,14 +396,34 @@ export const InstallmentView: React.FC = () => {
                   </div>
                 )}
                 <div className="pt-2 border-t border-emerald-200 dark:border-emerald-900 flex justify-between text-sm font-extrabold text-emerald-950 dark:text-emerald-300">
-                  <span>Total Tagihan Bayar:</span>
-                  <span>Rp {(selectedSchedule.totalBill + (selectedSchedule.penaltyAmount || 0)).toLocaleString('id-ID')}</span>
+                  <span>Total yang Harus Dibayar:</span>
+                  <span>
+                    Rp{' '}
+                    {(
+                      selectedSchedule.totalBill +
+                      (selectedSchedule.penaltyAmount || 0) +
+                      (collectionType === 'LAPANGAN' ? fieldServiceFee : 0)
+                    ).toLocaleString('id-ID')}
+                  </span>
                 </div>
               </div>
 
+              {collectionType === 'LAPANGAN' && (
+                <div className="space-y-1.5">
+                  <label className="font-bold text-stone-700 dark:text-stone-300">Nama Petugas Penagih / Kolektor</label>
+                  <input
+                    type="text"
+                    value={collectorName}
+                    onChange={(e) => setCollectorName(e.target.value)}
+                    placeholder="Nama Petugas Lapangan..."
+                    className="h-9 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 text-stone-800 focus:border-emerald-600 focus:bg-white focus:outline-hidden dark:border-stone-700 dark:bg-stone-800 dark:text-white"
+                  />
+                </div>
+              )}
+
               {/* Payment Method */}
               <div className="space-y-1.5">
-                <label className="font-bold text-stone-700 dark:text-stone-300">Metode Pembayaran</label>
+                <label className="font-bold text-stone-700 dark:text-stone-300">Metode Penyetoran Kas</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -328,7 +435,7 @@ export const InstallmentView: React.FC = () => {
                     }`}
                   >
                     <DollarSign className="h-4 w-4" />
-                    <span>Kas Tunai Kasir</span>
+                    <span>Kas Tunai</span>
                   </button>
                   <button
                     type="button"
