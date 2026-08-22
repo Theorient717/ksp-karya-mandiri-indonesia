@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Printer, CheckCircle, ShieldCheck } from 'lucide-react';
+import { KspLogo } from './KspLogo';
 
 export interface ReceiptData {
   title: string;
@@ -49,11 +50,11 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, dat
         {/* Printable Area */}
         <div id="receipt-print-area" className="flex-1 overflow-y-auto p-6 text-stone-800 dark:text-stone-200 space-y-4">
           {/* Logo & Header */}
-          <div className="text-center border-b border-dashed border-stone-300 pb-4 dark:border-stone-700">
-            <h2 className="text-base font-extrabold tracking-wide text-emerald-900 dark:text-emerald-400">
-              KSP KARYA MANDIRI INDONESIA
-            </h2>
-            <p className="text-[11px] text-stone-500">
+          <div className="text-center border-b border-dashed border-stone-300 pb-4 dark:border-stone-700 flex flex-col items-center">
+            <div className="mb-2">
+              <KspLogo size="md" />
+            </div>
+            <p className="text-[11px] text-stone-500 font-medium">
               Koperasi Simpan Pinjam Berbadan Hukum No. AHU-001234.AH.01.26
             </p>
             <p className="text-[10px] text-stone-400">

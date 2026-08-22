@@ -100,14 +100,14 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden sm:inline">Kalkulator</span>
         </button>
 
-        {/* Deploy to GitHub & Vercel Guide Shortcut */}
-        {onOpenDeployGuide && (
+        {/* Deploy to GitHub & Vercel Guide Shortcut - STRICTLY SUPER_ADMIN ONLY */}
+        {onOpenDeployGuide && currentUser?.role === 'SUPER_ADMIN' && (
           <button
             onClick={onOpenDeployGuide}
-            title="Panduan Deploy GitHub & Vercel (Gratis)"
+            title="Panduan Deploy GitHub & Vercel (Hanya Super Admin)"
             className="flex items-center gap-1.5 rounded-lg border border-stone-800 bg-stone-900 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-stone-800 dark:border-stone-700 dark:bg-stone-800 dark:hover:bg-stone-700 shadow-2xs"
           >
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
             <span className="hidden md:inline">Deploy Vercel</span>
           </button>
         )}

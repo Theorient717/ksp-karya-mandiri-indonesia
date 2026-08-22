@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { KspLogo } from './KspLogo';
 import {
   LayoutDashboard,
   Users,
@@ -73,36 +74,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         {/* Brand Header */}
         <div className="flex flex-col items-center justify-center border-b border-emerald-900/60 p-5 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-700/80 p-2 text-white shadow-inner mb-2">
-            <svg viewBox="0 0 48 48" fill="none" className="h-10 w-10 text-emerald-100">
-              <circle cx="24" cy="14" r="6" fill="currentColor" opacity="0.9" />
-              <circle cx="14" cy="22" r="5" fill="currentColor" opacity="0.8" />
-              <circle cx="34" cy="22" r="5" fill="currentColor" opacity="0.8" />
-              <path
-                d="M10 40C10 32.5 16.5 28 24 28C31.5 28 38 32.5 38 40"
-                stroke="currentColor"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M4 38C4 32.5 8 29 14 29"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-              <path
-                d="M44 38C44 32.5 40 29 34 29"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
+          <div className="bg-white/10 p-2 rounded-2xl backdrop-blur-xs border border-white/15 mb-2 shadow-xs">
+            <KspLogo size="md" inverted={true} showText={false} />
           </div>
-          <h1 className="text-base font-extrabold tracking-wide text-white uppercase">
-            KSP KARYA MANDIRI
+          <h1 className="text-sm font-black tracking-wider text-amber-400 uppercase">
+            KARYA MANDIRI
           </h1>
-          <p className="text-[11px] font-medium text-emerald-300/80">
-            Koperasi Simpan Pinjam Indonesia
+          <p className="text-[10px] font-bold tracking-[0.2em] text-amber-300/90 uppercase mt-0.5">
+            INDONESIA
+          </p>
+          <p className="text-[9px] font-medium text-emerald-300/70 mt-1">
+            Koperasi Simpan Pinjam Terintegrasi
           </p>
         </div>
 

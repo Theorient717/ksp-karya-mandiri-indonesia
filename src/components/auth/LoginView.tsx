@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
-import { Lock, CreditCard, ShieldCheck, CheckCircle2, ArrowRight, User, KeyRound, Building2 } from 'lucide-react';
+import { Lock, CreditCard, ShieldCheck, CheckCircle2, ArrowRight, User, Building2, Sparkles, HelpCircle } from 'lucide-react';
+import { KspLogo } from '../common/KspLogo';
+import { PublicLoanApplicationModal } from './PublicLoanApplicationModal';
 
 interface LoginViewProps {
   onOpenDeployGuide?: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
+export const LoginView: React.FC<LoginViewProps> = () => {
   const { login, verify2FaCode, is2FaPending, error, clearError } = useAuth();
   const [loginMode, setLoginMode] = useState<'member' | 'staff'>('member');
   const [nikInput, setNikInput] = useState('3273011204850001');
@@ -16,8 +18,15 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPublicApplyModal, setShowPublicApplyModal] = useState(false);
 
   const demoMembers = [
+    {
+      nik: '3273051408890002',
+      name: 'Usun (Nasabah Non-Anggota)',
+      partyType: 'NON_ANGGOTA',
+      desc: 'Pinjaman Rp200rb (Cair Rp190rb, Tagihan Rp210rb / Lapangan Rp220rb)',
+    },
     {
       nik: '3273011204850001',
       name: 'Budi Santoso, S.T.',
@@ -35,12 +44,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
       name: 'Ahmad Fauzi, M.Kom.',
       partyType: 'ANGGOTA',
       desc: 'Pengajuan Baru Rp25jt (Menunggu Approval)',
-    },
-    {
-      nik: '3273041010800007',
-      name: 'Hendro Gunawan',
-      partyType: 'NON_ANGGOTA',
-      desc: 'Nasabah Non-Anggota Peternak Unggas',
     },
   ];
 
@@ -105,76 +108,87 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
   return (
     <div className="flex min-h-screen bg-stone-100 dark:bg-stone-950 items-center justify-center p-4">
       <div className="flex w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
-        {/* Left Side: Brand presentation */}
+        {/* Left Side: Brand presentation with Official Logo */}
         <div className="hidden md:flex md:w-1/2 flex-col justify-between bg-[#143d30] p-8 text-white">
           <div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-700 p-2 shadow-inner mb-4">
-              <svg viewBox="0 0 48 48" fill="none" className="h-10 w-10 text-emerald-100">
-                <circle cx="24" cy="14" r="6" fill="currentColor" opacity="0.9" />
-                <circle cx="14" cy="22" r="5" fill="currentColor" opacity="0.8" />
-                <circle cx="34" cy="22" r="5" fill="currentColor" opacity="0.8" />
-                <path
-                  d="M10 40C10 32.5 16.5 28 24 28C31.5 28 38 32.5 38 40"
-                  stroke="currentColor"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+            <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-xs border border-white/15 inline-block mb-4 shadow-sm">
+              <KspLogo size="lg" inverted={true} />
             </div>
-            <h2 className="text-xl font-black uppercase tracking-wider">
-              KSP KARYA MANDIRI
-            </h2>
-            <p className="text-xs text-emerald-300/90 font-medium mt-0.5">
-              Sistem Koperasi Simpan Pinjam Terintegrasi
+            <p className="text-xs text-emerald-200/90 font-medium mt-1">
+              Sistem Koperasi Simpan Pinjam Terintegrasi Indonesia
             </p>
           </div>
 
-          <div className="space-y-3 text-xs text-emerald-100/80">
+          <div className="space-y-3 text-xs text-emerald-100/80 my-4">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-              <span>Portal Mandiri Anggota: Akses Kartu Pinjaman & Simpanan via NIK</span>
+              <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+              <span>Portal Mandiri Nasabah: Akses Riwayat & Kartu via NIK</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-              <span>Arsitektur 10 Google Spreadsheet Multi-Database (Free Budget)</span>
+              <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+              <span>Non-Anggota & Anggota Dapat Mengajukan Pinjaman Langsung</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+              <span>Arsitektur 10 Google Spreadsheet Multi-Database Real-Time</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
               <span>Aturan Pinjaman Wajib Kelipatan Rp 50.000</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
               <span>Buku Besar Otomatis Berpasangan (Double Entry)</span>
             </div>
           </div>
 
-          {/* Quick Guide Button */}
-          {onOpenDeployGuide && (
-            <button
-              onClick={onOpenDeployGuide}
-              className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-emerald-950/80 border border-emerald-500/30 px-3 py-2 text-xs font-bold text-emerald-200 hover:bg-emerald-800 transition-colors"
-            >
-              <span>🚀 Panduan Deploy GitHub & Vercel</span>
-            </button>
-          )}
-
-          <div className="text-[11px] text-emerald-300/50">
+          <div className="text-[11px] text-emerald-300/50 pt-2 border-t border-emerald-900/60">
             © 2026 KSP Karya Mandiri Indonesia • AHU-001234.AH.01.26
           </div>
         </div>
 
-        {/* Right Side: Login Form */}
-        <div className="flex w-full md:w-1/2 flex-col justify-center p-8 space-y-5">
-          <div>
-            <h3 className="text-xl font-extrabold text-stone-900 dark:text-white">
-              Masuk ke Sistem KSP
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-              Pilih jenis akses akun Anda di bawah ini.
-            </p>
+        {/* Right Side: Login & Online Application Form */}
+        <div className="flex w-full md:w-1/2 flex-col justify-center p-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-extrabold text-stone-900 dark:text-white">
+                Masuk ke Sistem KSP
+              </h3>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                Pilih jenis akses akun Anda di bawah ini.
+              </p>
+            </div>
+            {/* Mobile Logo Only */}
+            <div className="md:hidden">
+              <KspLogo size="sm" showText={false} />
+            </div>
           </div>
 
-          {/* Tab Selector: Anggota (NIK) vs Petugas (Staff) */}
+          {/* Banner Ajukan Pinjaman Online Mandiri (Non-Anggota / Calon Nasabah) */}
+          <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-amber-500/10 p-3 border border-amber-300 dark:border-amber-700/60 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-stone-950 font-bold shadow-xs">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div className="leading-tight">
+                <div className="text-xs font-bold text-stone-900 dark:text-white">
+                  Belum Terdaftar / Ingin Pinjam?
+                </div>
+                <div className="text-[10px] text-stone-600 dark:text-stone-400">
+                  Ajukan mandiri (Non-Anggota / Anggota)
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPublicApplyModal(true)}
+              className="shrink-0 rounded-xl bg-amber-500 hover:bg-amber-600 px-3 py-1.5 text-xs font-bold text-stone-950 transition-colors shadow-xs"
+            >
+              Ajukan Online
+            </button>
+          </div>
+
+          {/* Tab Selector: Anggota / Nasabah (NIK) vs Petugas (Staff) */}
           <div className="flex rounded-xl bg-stone-100 p-1 dark:bg-stone-800">
             <button
               type="button"
@@ -189,7 +203,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
               }`}
             >
               <CreditCard className="h-3.5 w-3.5" />
-              <span>Anggota / Nasabah (NIK)</span>
+              <span>Portal Nasabah & Anggota (NIK)</span>
             </button>
             <button
               type="button"
@@ -214,9 +228,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
             </div>
           )}
 
-          {/* MODE 1: LOGIN ANGGOTA (MENGGUNAKAN NIK KTP 16 DIGIT) */}
+          {/* MODE 1: LOGIN ANGGOTA / NASABAH (MENGGUNAKAN NIK KTP 16 DIGIT) */}
           {loginMode === 'member' ? (
-            <form onSubmit={handleMemberLogin} className="space-y-3.5 text-xs">
+            <form onSubmit={handleMemberLogin} className="space-y-3 text-xs">
               <div>
                 <label className="font-bold text-stone-700 dark:text-stone-300">
                   Nomor Induk Kependudukan (NIK KTP 16 Digit)
@@ -228,12 +242,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
                     required
                     value={nikInput}
                     onChange={(e) => setNikInput(e.target.value)}
-                    placeholder="Contoh: 3273011204850001"
+                    placeholder="Contoh: 3273051408890002"
                     className="h-10 w-full rounded-xl border border-stone-200 bg-stone-50 pl-9 pr-3 font-mono text-sm tracking-wider text-stone-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden dark:border-stone-700 dark:bg-stone-800 dark:text-white"
                   />
                 </div>
                 <p className="mt-1 text-[11px] text-stone-500">
-                  Anggota & non-anggota cukup memasukkan NIK untuk melihat besaran pinjaman, riwayat angsuran, dan sisa tunggakan pribadi.
+                  Masukkan NIK untuk melihat kartu pinjaman, jadwal angsuran, sisa tagihan, & status pengajuan.
                 </p>
               </div>
 
@@ -247,9 +261,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
               </button>
 
               {/* Quick Sample Members Selector */}
-              <div className="pt-2 border-t border-stone-200 dark:border-stone-800 space-y-1.5">
+              <div className="pt-2 border-t border-stone-200 dark:border-stone-800 space-y-1">
                 <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
-                  Pilih Contoh Anggota untuk Uji Coba:
+                  Pilih Contoh Nasabah / Anggota untuk Uji Coba:
                 </span>
                 <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
                   {demoMembers.map((m) => (
@@ -277,7 +291,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
             </form>
           ) : (
             /* MODE 2: LOGIN PETUGAS / PENGURUS */
-            <form onSubmit={handleStaffLogin} className="space-y-3.5 text-xs">
+            <form onSubmit={handleStaffLogin} className="space-y-3 text-xs">
               <div>
                 <label className="font-bold text-stone-700 dark:text-stone-300">Username / ID Pegawai</label>
                 <div className="relative mt-1">
@@ -335,7 +349,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
               </button>
 
               {/* Quick Demo Staff Selector */}
-              <div className="pt-2 border-t border-stone-200 dark:border-stone-800 space-y-1.5">
+              <div className="pt-2 border-t border-stone-200 dark:border-stone-800 space-y-1">
                 <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
                   Akses Cepat Petugas:
                 </span>
@@ -361,7 +375,15 @@ export const LoginView: React.FC<LoginViewProps> = ({ onOpenDeployGuide }) => {
           )}
         </div>
       </div>
+
+      {/* Public Online Loan Application Modal */}
+      <PublicLoanApplicationModal
+        isOpen={showPublicApplyModal}
+        onClose={() => setShowPublicApplyModal(false)}
+        onSuccessLogin={(registeredNik) => {
+          handleQuickMemberSelect(registeredNik);
+        }}
+      />
     </div>
   );
 };
-
